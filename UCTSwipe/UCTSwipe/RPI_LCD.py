@@ -74,24 +74,24 @@ class LCD(object):
         self.RS.off() # Set RS low so data is interpreted as a command
 
         # Send 1st nibble of command
-        if (command & 0x80): self.data_lines[0].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x40): self.data_lines[1].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x20): self.data_lines[2].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x10): self.data_lines[3].on() # Set corresponding data line to value of command
+        if (command & 0x80): self.data_lines[3].on() # Set corresponding data line to value of command
+        else: self.data_lines[3].off()
+        if (command & 0x40): self.data_lines[2].on() # Set corresponding data line to value of command
+        else: self.data_lines[2].off()
+        if (command & 0x20): self.data_lines[1].on() # Set corresponding data line to value of command
+        else: self.data_lines[1].off()
+        if (command & 0x10): self.data_lines[0].on() # Set corresponding data line to value of command
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 
         # Send 2nd nibble of command
-        if (command & 0x08): self.data_lines[0].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x04): self.data_lines[1].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x02): self.data_lines[2].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        if (command & 0x01): self.data_lines[3].on() # Set corresponding data line to value of command
+        if (command & 0x08): self.data_lines[3].on() # Set corresponding data line to value of command
+        else: self.data_lines[3].off()
+        if (command & 0x04): self.data_lines[2].on() # Set corresponding data line to value of command
+        else: self.data_lines[2].off()
+        if (command & 0x02): self.data_lines[1].on() # Set corresponding data line to value of command
+        else: self.data_lines[1].off()
+        if (command & 0x01): self.data_lines[0].on() # Set corresponding data line to value of command
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 
@@ -114,24 +114,24 @@ class LCD(object):
         self.RS.on() # Set RS high so data is interpreted as a character
 
         # Send 1st nibble of character
-        if (character & 0x80): self.data_lines[0].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x40): self.data_lines[1].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x20): self.data_lines[2].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x10): self.data_lines[3].on() # Set corresponding data line to value of character
+        if (character & 0x80): self.data_lines[3].on() # Set corresponding data line to value of character
+        else: self.data_lines[3].off()
+        if (character & 0x40): self.data_lines[2].on() # Set corresponding data line to value of character
+        else: self.data_lines[2].off()
+        if (character & 0x20): self.data_lines[1].on() # Set corresponding data line to value of character
+        else: self.data_lines[1].off()
+        if (character & 0x10): self.data_lines[0].on() # Set corresponding data line to value of character
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 
         # Send 2nd nibble of character
-        if (character & 0x08): self.data_lines[0].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x04): self.data_lines[1].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x02): self.data_lines[2].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        if (character & 0x01): self.data_lines[3].on() # Set corresponding data line to value of character
+        if (character & 0x08): self.data_lines[3].on() # Set corresponding data line to value of character
+        else: self.data_lines[3].off()
+        if (character & 0x04): self.data_lines[2].on() # Set corresponding data line to value of character
+        else: self.data_lines[2].off()
+        if (character & 0x02): self.data_lines[1].on() # Set corresponding data line to value of character
+        else: self.data_lines[1].off()
+        if (character & 0x01): self.data_lines[0].on() # Set corresponding data line to value of character
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 

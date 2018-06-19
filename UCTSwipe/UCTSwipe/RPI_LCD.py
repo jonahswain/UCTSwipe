@@ -55,16 +55,16 @@ class LCD(object):
         LCD.__sleep_micros(20000) # Wait 20ms
 
         # Initialisation commands
-        self.send_command(ENABLE) # Enable LCD controller
-        self.send_command(FOURBIT_MODE) # Set to 4-bit mode
-        self.send_command(TWOLINE_MODE) # Set 2-line mode
-        self.send_command(DISPLAY_DISABLE) # Enable the LCD
-        self.send_command(CLEAR_DISPLAY) # Clear the LCD
+        self.send_command(LCD.ENABLE) # Enable LCD controller
+        self.send_command(LCD.FOURBIT_MODE) # Set to 4-bit mode
+        self.send_command(LCD.TWOLINE_MODE) # Set 2-line mode
+        self.send_command(LCD.DISPLAY_DISABLE) # Enable the LCD
+        self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
 
 
     def clear(self):
         """Clears the LCD"""
-        send_command(CLEAR_DISPLAY) # Clear the LCD
+        send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
 
     def send_command(self, command):
         """Sends a command to the LCD"""
@@ -93,7 +93,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         self.LCD.__cycle_EN() # Cycle EN line
 
-        if (command == CLEAR_DISPLAY or command == CURSOR_HOME): LCD.__sleep_micros(1530) # Wait 1.53 ms for command execution
+        if (command == LCD.CLEAR_DISPLAY or command == LCD.CURSOR_HOME): LCD.__sleep_micros(1530) # Wait 1.53 ms for command execution
         else: LCD.__sleep_micros(43) # Wait 43 us for command execution
 
     def set_cursor_position(self, line, character):
@@ -142,11 +142,11 @@ class LCD(object):
 
     def write_lcd(self, line1, line2):
         """Clears the LCD and writes strings to both lines"""
-        self.send_command(CLEAR_DISPLAY) # Clear the LCD
-        self.send_command(CURSOR_HOME) # Home the cursor
+        self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
+        self.send_command(LCD.CURSOR_HOME) # Home the cursor
         for character in line1: # Write line 1
             self.place_character(character)
-        self.send_command(CURSOR_LINETWO) # Move cursor to line 2
+        self.send_command(LCD.CURSOR_LINETWO) # Move cursor to line 2
         for character in line2: # Write line 2
             self.place_character(character)
 

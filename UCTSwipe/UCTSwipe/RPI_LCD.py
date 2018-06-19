@@ -80,7 +80,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         if (command & 0x10): self.data_lines[3].on() # Set corresponding data line to value of command
         else: self.data_lines[0].off()
-        self.LCD.__cycle_EN() # Cycle EN line
+        self.__cycle_EN() # Cycle EN line
 
         # Send 2nd nibble of command
         if (command & 0x08): self.data_lines[0].on() # Set corresponding data line to value of command
@@ -91,7 +91,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         if (command & 0x01): self.data_lines[3].on() # Set corresponding data line to value of command
         else: self.data_lines[0].off()
-        self.LCD.__cycle_EN() # Cycle EN line
+        self.__cycle_EN() # Cycle EN line
 
         if (command == LCD.CLEAR_DISPLAY or command == LCD.CURSOR_HOME): LCD.__sleep_micros(1530) # Wait 1.53 ms for command execution
         else: LCD.__sleep_micros(43) # Wait 43 us for command execution
@@ -120,7 +120,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         if (character & 0x10): self.data_lines[3].on() # Set corresponding data line to value of character
         else: self.data_lines[0].off()
-        self.LCD.__cycle_EN() # Cycle EN line
+        self.__cycle_EN() # Cycle EN line
 
         # Send 2nd nibble of character
         if (character & 0x08): self.data_lines[0].on() # Set corresponding data line to value of character
@@ -131,7 +131,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         if (character & 0x01): self.data_lines[3].on() # Set corresponding data line to value of character
         else: self.data_lines[0].off()
-        self.LCD.__cycle_EN() # Cycle EN line
+        self.__cycle_EN() # Cycle EN line
 
         LCD.__sleep_micros(43) # Wait 43 us for character placement
 

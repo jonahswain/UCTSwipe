@@ -8,7 +8,7 @@
 import gpiozero
 import time
 
-class RPI_LCD(object):
+class LCD(object):
     """LCD class"""
 
     # Commands

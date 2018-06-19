@@ -26,17 +26,19 @@ class LCD(object):
     CURSOR_LEFT = 0x10 # Moves the cursor one position to the left
 
 
-    def __sleep_micros(microseconds):
-        """Sleeps for a specified number of microseconds"""
-        time.sleep(microseconds/1000000)
+    def _delay_micros(microseconds):
+        """Waits in a loop for a specified number of microseconds"""
+        end = time.time() + (microseconds/1000000.0)
+        while time.time() < end:
+            pass
 
     def __cycle_EN(self):
         """Cycles the EN line (for data/commands to be sent)"""
-        LCD.__sleep_micros(5) # Wait before cycling
+        LCD._delay_micros(5) # Wait before cycling
         self.EN.on() # Ensure EN is high
-        LCD.__sleep_micros(5) # Wait before cycling
+        LCD._delay_micros(5) # Wait before cycling
         self.EN.off() # Set EN low
-        LCD.__sleep_micros(10) # Wait
+        LCD._delay_micros(10) # Wait
         self.EN.on() # Set EN high
 
     def __init__(self, pin_RS, pin_EN, pin_D4, pin_D5, pin_D6, pin_D7):
@@ -52,7 +54,7 @@ class LCD(object):
     def initialise(self):
         """Initialises the LCD display (performs initial configuration and clears the display)"""
         self.EN.on() # set EN high
-        LCD.__sleep_micros(20000) # Wait 20ms
+        LCD._delay_micros(20000) # Wait 20ms
 
         # Initialisation commands
         self.send_command(LCD.ENABLE) # Enable LCD controller
@@ -93,8 +95,8 @@ class LCD(object):
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 
-        if (command == LCD.CLEAR_DISPLAY or command == LCD.CURSOR_HOME): LCD.__sleep_micros(1530) # Wait 1.53 ms for command execution
-        else: LCD.__sleep_micros(43) # Wait 43 us for command execution
+        if (command == LCD.CLEAR_DISPLAY or command == LCD.CURSOR_HOME): LCD._delay_micros(1530) # Wait 1.53 ms for command execution
+        else: LCD._delay_micros(43) # Wait 43 us for command execution
 
     def set_cursor_position(self, line, character):
         """Moves the cursor to a specified location"""
@@ -133,7 +135,7 @@ class LCD(object):
         else: self.data_lines[0].off()
         self.__cycle_EN() # Cycle EN line
 
-        LCD.__sleep_micros(43) # Wait 43 us for character placement
+        LCD._delay_micros(43) # Wait 43 us for character placement
 
     def write_string(self, string):
         """Places a string on the LCD, starting at the current cursor position"""

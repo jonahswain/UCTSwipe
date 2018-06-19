@@ -142,7 +142,7 @@ class LCD(object):
         for i in range(len(string)):
             self.place_character(ord(string[i]))
 
-    def write_lcd(self, line1, line2):
+    def write(self, line1, line2):
         """Clears the LCD and writes strings to both lines"""
         self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
         self.send_command(LCD.CURSOR_HOME) # Home the cursor

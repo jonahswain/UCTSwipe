@@ -138,17 +138,17 @@ class LCD(object):
     def write_string(self, string):
         """Places a string on the LCD, starting at the current cursor position"""
         for i in range(len(string)):
-            self.place_character(int(string[i]))
+            self.place_character(ord(string[i]))
 
     def write_lcd(self, line1, line2):
         """Clears the LCD and writes strings to both lines"""
         self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
         self.send_command(LCD.CURSOR_HOME) # Home the cursor
         for i in range(len(line1)): # Write line 1
-            self.place_character(int(line1[i]))
+            self.place_character(ord(line1[i]))
         self.send_command(LCD.CURSOR_LINETWO) # Move cursor to line 2
         for i in range(len(line2)): # Write line 2
-            self.place_character(int(line2[i]))
+            self.place_character(ord(line2[i]))
 
     def __del__(self):
         """Deconstructor"""

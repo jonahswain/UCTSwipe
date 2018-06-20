@@ -1,15 +1,14 @@
 # UCTSwipe
 # Student access card reader/logger
 # Author: Jonah Swain (SWNJON003)
-# LCD
-# Module to allow use of common 2x16 LCDs (ADM1602K-NSA-FBS/3.3V LCD) in 4-bit mode
+# LCD (Allows use of the ADM1602K-NSA-FBS/3.3V and similar 2x16 LCDs)
 
 # Imports
-import gpiozero
 import time
+import gpiozero as GPIO
 
 class LCD(object):
-    """LCD class"""
+    """A 2x16 LCD class"""
 
     # Commands
     ENABLE = 0x33 # Power up the LCD
@@ -25,140 +24,138 @@ class LCD(object):
     CURSOR_RIGHT = 0x14 # Moves the cursor one position to the right
     CURSOR_LEFT = 0x10 # Moves the cursor one position to the left
 
-
     def _delay_micros(microseconds):
-        """Waits in a loop for a specified number of microseconds"""
+        # Holds in a loop for a specified duration in microseconds (Note that this is very approximate in reality)
         end = time.time() + (microseconds/1000000.0)
         while time.time() < end:
             pass
 
-    def __cycle_EN(self):
-        """Cycles the EN line (for data/commands to be sent)"""
-        LCD._delay_micros(5) # Wait before cycling
-        self.EN.on() # Ensure EN is high
-        LCD._delay_micros(5) # Wait before cycling
-        self.EN.off() # Set EN low
-        LCD._delay_micros(10) # Wait
-        self.EN.on() # Set EN high
+    def _cycle_EN(self):
+        # Cycles the EN line to trigger data reception on the LCD
+        LCD._delay_micros(1)
+        self._EN.on()
+        LCD._delay_micros(1)
+        self._EN.off()
+        LCD._delay_micros(1)
+        self._EN.on()
+        LCD._delay_micros(1)
 
-    def __init__(self, pin_RS, pin_EN, pin_D4, pin_D5, pin_D6, pin_D7):
-        """Initialises (declares) an LCD on the specified GPIO pin numbers (4-bit mode)"""
-        self.RS = gpiozero.OutputDevice(pin_RS)
-        self.EN = gpiozero.OutputDevice(pin_EN)
-        self.data_lines = []
-        self.data_lines.append(gpiozero.OutputDevice(pin_D4))
-        self.data_lines.append(gpiozero.OutputDevice(pin_D5))
-        self.data_lines.append(gpiozero.OutputDevice(pin_D6))
-        self.data_lines.append(gpiozero.OutputDevice(pin_D7))
+    def __init__(self, RS, EN,  D4, D5, D6, D7):
+        # Declares an LCD on the specified GPIO pins
+        self._RS = GPIO.OutputDevice(RS)
+        self._EN = GPIO.OutputDevice(EN)
+        self._D4 = GPIO.OutputDevice(D4)
+        self._D5 = GPIO.OutputDevice(D5)
+        self._D6 = GPIO.OutputDevice(D6)
+        self._D7 = GPIO.OutputDevice(D7)
 
     def initialise(self):
-        """Initialises the LCD display (performs initial configuration and clears the display)"""
+        # Performs LCD initialisation and clears the screen
         self.EN.on() # set EN high
-        LCD._delay_micros(20000) # Wait 20ms
+        LCD._delay_micros(20000) # Wait 20ms for LCD to power up
 
         # Initialisation commands
-        self.send_command(LCD.ENABLE) # Enable LCD controller
-        self.send_command(LCD.FOURBIT_MODE) # Set to 4-bit mode
-        self.send_command(LCD.TWOLINE_MODE) # Set 2-line mode
-        self.send_command(LCD.DISPLAY_DISABLE) # Enable the LCD
-        self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
+        self.command(LCD.ENABLE) # Enable LCD controller
+        self.command(LCD.FOURBIT_MODE) # Set to 4-bit mode
+        self.command(LCD.TWOLINE_MODE) # Set 2-line mode
+        self.command(LCD.DISPLAY_DISABLE) # Enable the LCD
+        self.command(LCD.CLEAR_DISPLAY) # Clear the LCD
 
+    def command(self, command):
+        # Sends a command to the LCD
+        self._RS.off() # Set RS low so data is interpreted as command
 
-    def clear(self):
-        """Clears the LCD"""
-        send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
+        # Send upper nibble
+        if ((command & 0x80) > 0): self._D7.on()
+        else: self._D7.off()
+        if ((command & 0x40) > 0): self._D6.on()
+        else: self._D6.off()
+        if ((command & 0x20) > 0): self._D5.on()
+        else: self._D5.off()
+        if ((command & 0x10) > 0): self._D4.on()
+        else: self._D4.off()
 
-    def send_command(self, command):
-        """Sends a command to the LCD"""
+        self._cycle_EN()
 
-        self.RS.off() # Set RS low so data is interpreted as a command
+        # Send lower nibble
+        if ((command & 0x08) > 0): self._D7.on()
+        else: self._D7.off()
+        if ((command & 0x04) > 0): self._D6.on()
+        else: self._D6.off()
+        if ((command & 0x02) > 0): self._D5.on()
+        else: self._D5.off()
+        if ((command & 0x01) > 0): self._D4.on()
+        else: self._D4.off()
 
-        # Send 1st nibble of command
-        if (command & 0x80): self.data_lines[3].on() # Set corresponding data line to value of command
-        else: self.data_lines[3].off()
-        if (command & 0x40): self.data_lines[2].on() # Set corresponding data line to value of command
-        else: self.data_lines[2].off()
-        if (command & 0x20): self.data_lines[1].on() # Set corresponding data line to value of command
-        else: self.data_lines[1].off()
-        if (command & 0x10): self.data_lines[0].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        self.__cycle_EN() # Cycle EN line
-
-        # Send 2nd nibble of command
-        if (command & 0x08): self.data_lines[3].on() # Set corresponding data line to value of command
-        else: self.data_lines[3].off()
-        if (command & 0x04): self.data_lines[2].on() # Set corresponding data line to value of command
-        else: self.data_lines[2].off()
-        if (command & 0x02): self.data_lines[1].on() # Set corresponding data line to value of command
-        else: self.data_lines[1].off()
-        if (command & 0x01): self.data_lines[0].on() # Set corresponding data line to value of command
-        else: self.data_lines[0].off()
-        self.__cycle_EN() # Cycle EN line
+        self._cycle_EN()
 
         if (command == LCD.CLEAR_DISPLAY or command == LCD.CURSOR_HOME): LCD._delay_micros(1530) # Wait 1.53 ms for command execution
         else: LCD._delay_micros(43) # Wait 43 us for command execution
 
-    def set_cursor_position(self, line, character):
-        """Moves the cursor to a specified location"""
-        
-        character &= 0x1F # Drop character MSBs
-        if (line == 1): # Add the line part to the character part
-            character |= 0x80
-        elif (line == 2):
-            character |= 0xC0
-
-        self.send_command(character) # Send the command
-
     def place_character(self, character):
-        """Places a character on the LCD at the current cursor position"""
-        self.RS.on() # Set RS high so data is interpreted as a character
+        # Places a character on the LCD at the current cursor position
+        self._RS.on() # Set RS high so data is interpreted 
 
-        # Send 1st nibble of character
-        if (character & 0x80): self.data_lines[3].on() # Set corresponding data line to value of character
-        else: self.data_lines[3].off()
-        if (character & 0x40): self.data_lines[2].on() # Set corresponding data line to value of character
-        else: self.data_lines[2].off()
-        if (character & 0x20): self.data_lines[1].on() # Set corresponding data line to value of character
-        else: self.data_lines[1].off()
-        if (character & 0x10): self.data_lines[0].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        self.__cycle_EN() # Cycle EN line
+        # Send upper nibble
+        if ((character & 0x80) > 0): self._D7.on()
+        else: self._D7.off()
+        if ((character & 0x40) > 0): self._D6.on()
+        else: self._D6.off()
+        if ((character & 0x20) > 0): self._D5.on()
+        else: self._D5.off()
+        if ((character & 0x10) > 0): self._D4.on()
+        else: self._D4.off()
 
-        # Send 2nd nibble of character
-        if (character & 0x08): self.data_lines[3].on() # Set corresponding data line to value of character
-        else: self.data_lines[3].off()
-        if (character & 0x04): self.data_lines[2].on() # Set corresponding data line to value of character
-        else: self.data_lines[2].off()
-        if (character & 0x02): self.data_lines[1].on() # Set corresponding data line to value of character
-        else: self.data_lines[1].off()
-        if (character & 0x01): self.data_lines[0].on() # Set corresponding data line to value of character
-        else: self.data_lines[0].off()
-        self.__cycle_EN() # Cycle EN line
+        self._cycle_EN()
 
-        LCD._delay_micros(43) # Wait 43 us for character placement
+        # Send lower nibble
+        if ((character & 0x08) > 0): self._D7.on()
+        else: self._D7.off()
+        if ((character & 0x04) > 0): self._D6.on()
+        else: self._D6.off()
+        if ((character & 0x02) > 0): self._D5.on()
+        else: self._D5.off()
+        if ((character & 0x01) > 0): self._D4.on()
+        else: self._D4.off()
 
-    def write_string(self, string):
-        """Places a string on the LCD, starting at the current cursor position"""
-        for i in range(len(string)):
-            self.place_character(ord(string[i]))
+        self._cycle_EN()
+
+        LCD._delay_micros(43) # Wait 43 us for command execution
+
+    def set_cursor_position(self, row, column):
+        # Moves the cursor to a specified position on the LCD
+        column &= 0x1F # Drop column MSBs
+        if (row == 1): # Add the row part to the column part
+            column |= 0x80
+        elif (row == 2):
+            column |= 0xC0
+
+        self.command(column) # Send the command
+
+    def clear(self):
+        # Clears the LCD
+        self.command(LCD.CLEAR_DISPLAY)
+
+    def place_string(self, string):
+        # Places a string on the LCD, starting at the current cursor position
+        for character in string:
+            self.place_character(ord(character))
 
     def write(self, line1, line2):
-        """Clears the LCD and writes strings to both lines"""
-        self.send_command(LCD.CLEAR_DISPLAY) # Clear the LCD
-        self.send_command(LCD.CURSOR_HOME) # Home the cursor
-        for i in range(len(line1)): # Write line 1
-            self.place_character(ord(line1[i]))
-        self.send_command(LCD.CURSOR_LINETWO) # Move cursor to line 2
-        for i in range(len(line2)): # Write line 2
-            self.place_character(ord(line2[i]))
+        # Clears the LCD and writes lines 1 and 2
+        self.command(LCD.CLEAR_DISPLAY)
+        self.command(LCD.CURSOR_HOME)
+        self.place_string(line1)
+        self.command(LCD.CURSOR_LINETWO)
+        self.place_string(line2)
 
     def __del__(self):
-        """Deconstructor"""
-        for pin in self.data_lines:
-            pin.close()
-            del pin
-        del self.data_lines
-        self.RS.close()
-        self.EN.close()
-        del self.RS
-        del self.EN
+        # Deletes the current LCD instance and frees up all GPIO pins
+        for gpio in {self._RS, self._EN, self._D4, self._D5, self._D6, self._D7}:
+            gpio.close()
+        del(self._RS)
+        del(self._EN)
+        del(self._D4)
+        del(self._D5)
+        del(self._D6)
+        del(self._D7)

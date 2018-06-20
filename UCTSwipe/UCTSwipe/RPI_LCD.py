@@ -51,7 +51,7 @@ class LCD(object):
 
     def initialise(self):
         # Performs LCD initialisation and clears the screen
-        self.EN.on() # set EN high
+        self._EN.on() # set EN high
         LCD._delay_micros(20000) # Wait 20ms for LCD to power up
 
         # Initialisation commands

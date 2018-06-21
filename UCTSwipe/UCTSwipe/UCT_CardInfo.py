@@ -14,3 +14,6 @@ class User(object):
     # surname
     # authorisation (List of things the user is allowed to access)
     # attendance_authorisation (Lecture/tut/lab slots the student is registered for)
+
+class UserDatabase(object):
+    """A connection to the database in which all the student card information is stored"""

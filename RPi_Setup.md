@@ -39,7 +39,7 @@
    4.1. Get the following packages from apt  
       - pip (Python library installer)  
       - git (Assuming you want to clone this project from github)  
-   4.1. Get the following python libraries from pip  
+   4.2. Get the following python libraries from pip  
       - gpiozero (RPi GPIO library)  
       - gspread (Google sheets library)  
       - oauth2client (For connecting to Google sheets)  

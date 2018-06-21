@@ -3,6 +3,9 @@
 # Author: Jonah Swain (SWNJON003)
 # LCD (Allows use of the ADM1602K-NSA-FBS/3.3V and similar 2x16 LCDs)
 
+# Sidenote: The LCDs used at UCT are NOT ADM1602K-NSA-FBS/3.3V, they run on 5V. This caused me hours of headache wondering why my code wasn't working, when in fact I had the LCD connected to 3.3V so it wasn't powering on properly
+
+
 # Imports
 import time
 import gpiozero as GPIO

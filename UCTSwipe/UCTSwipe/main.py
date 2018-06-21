@@ -7,7 +7,12 @@ import RPI_LCD
 import time
 import gpiozero as GPIO
 
-def testLCD():
-    myLCD = RPI_LCD.LCD(20, 21, 5, 6, 13, 19)
-    myLCD.initialise()
-    myLCD.write("Testing LCD", "123456789")
+def main():
+    # Main function
+    piLCD = RPI_LCD.LCD(20, 21, 5, 6, 13, 19)
+    piLCD.initialise()
+    piLCD.write("Startup", "In progress")
+
+
+if (__name__ == "__main__"):
+    main()

@@ -48,6 +48,7 @@ class LCD(object):
         self._D5 = GPIO.OutputDevice(D5)
         self._D6 = GPIO.OutputDevice(D6)
         self._D7 = GPIO.OutputDevice(D7)
+        self._EN.on()
 
     def initialise(self):
         # Performs LCD initialisation and clears the screen
@@ -57,8 +58,8 @@ class LCD(object):
         # Initialisation commands
         self.command(LCD.ENABLE) # Enable LCD controller
         self.command(LCD.FOURBIT_MODE) # Set to 4-bit mode
-        self.command(LCD.TWOLINE_MODE) # Set 2-line mode
         self.command(LCD.DISPLAY_DISABLE) # Enable the LCD
+        self.command(LCD.TWOLINE_MODE) # Set 2-line mode
         self.command(LCD.CLEAR_DISPLAY) # Clear the LCD
 
     def command(self, command):

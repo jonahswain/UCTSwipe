@@ -22,6 +22,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.py" />
+    <Compile Include="RPI_CardReader.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RPI_LCD.py">
       <SubType>Code</SubType>
     </Compile>

@@ -72,7 +72,7 @@ class AttendanceLog(object):
         if (self.mode == 'online'):
             while(self.log_gsheet_index < len(self.attendance_log)):
                 try:
-                    self.worksheet.append_row([self.attendance_log[self.log_gsheet_index]])
+                    self.worksheet.append_row([self.attendance_log[self.log_gsheet_index]]) # Append the student number to GSheet
                 except:
                     self.on_error("Could not add " + self.attendance_log[self.log_gsheet_index] + " to sheet")
                 self.log_gsheet_index += 1

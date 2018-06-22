@@ -16,13 +16,24 @@ class CardReader(threading.Thread):
         self.card_data = []
 
     def run(self):
-        pass # Running part of thread (in background scan card reader serial port)
+        # Running part of thread (in background scan card reader serial port)
+        card_data_length = 14
+        while True:
+            # Loop forever
+            if (self.com.inWaiting() >= card_data_length):
+                card_data_raw = self.com.read(card_data_length) # Retrieve the data from the serial buffer
+                card_data_raw = card_data_raw.decode("utf-8") # Decode it into characters
+                card_data_raw = int(card_data_raw[1:-3], 16) # Convert it into base 16
+                self.card_data.append(card_data_raw) # Add it to the available data array
+            time.sleep(0.1) # Sleep for 100ms, allowing other threads to execute
 
     def card_data_available(self):
-        pass # Return the number of card data in the array
+        return len(self.card_data)
 
     def get_card_data(self):
-        pass # Return the first card data in the array
+        cdata = self.card_data[0]
+        del self.card_data[0]
+        return cdata
 
     def flush_serial(self):
         # Flush any serial data waiting

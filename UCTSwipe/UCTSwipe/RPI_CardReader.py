@@ -33,7 +33,7 @@ class CardReader(threading.Thread):
         return len(self.card_data)
 
     def get_card_data(self):
-        if (len(self.card_data > 0)):
+        if (len(self.card_data) > 0):
             cdata = self.card_data[0]
             del self.card_data[0]
             return cdata

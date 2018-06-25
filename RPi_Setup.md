@@ -43,3 +43,7 @@
         - gpiozero (RPi GPIO library)  
         - gspread (Google sheets library)  
         - oauth2client (For connecting to Google sheets)  
+        - pyserial (For UART to use the RDM6300 card reader; Doesn't always install correctly through pip, if not, download from their website)  
+   4.3. Enabling RPi software serial port:
+        Add the line 'enable_uart=1' to the bottom of /boot/cmdline.txt
+        

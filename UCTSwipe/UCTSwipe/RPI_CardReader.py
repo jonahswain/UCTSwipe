@@ -32,9 +32,12 @@ class CardReader(threading.Thread):
         return len(self.card_data)
 
     def get_card_data(self):
-        cdata = self.card_data[0]
-        del self.card_data[0]
-        return cdata
+        if (len(self.card_data > 0)):
+            cdata = self.card_data[0]
+            del self.card_data[0]
+            return cdata
+        else:
+            return None
 
     def flush_serial(self):
         # Flush any serial data waiting

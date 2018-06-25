@@ -43,3 +43,6 @@ class CardReader(threading.Thread):
     def flush_serial(self):
         # Flush any serial data waiting
         self.com.read(self.com.inWaiting())
+
+    def __del__(self):
+        self.com.close()

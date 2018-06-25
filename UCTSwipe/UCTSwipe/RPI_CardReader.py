@@ -6,6 +6,7 @@
 # Imports
 import threading
 import serial
+import time
 
 class CardReader(threading.Thread):
     """An RDM6300 card reader connected via serial"""

@@ -12,6 +12,7 @@ class CardReader(threading.Thread):
 
     def __init__(self, serial_port):
         # Open com port
+        super.__init__(self)
         self.com = serial.Serial(serial_port,baudrate=9600,parity=serial.PARITY_ODD,stopbits=serial.STOPBITS_TWO,bytesize=serial.SEVENBITS)
         self.card_data = []
 

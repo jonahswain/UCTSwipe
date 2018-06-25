@@ -15,11 +15,11 @@ def main():
     #piLCD.initialise()
     #piLCD.write("Startup", "In progress")
 
-    #al = UCT_AttendanceLogging.AttendanceLog("TestSheet", "testlog1")
-    #al.log("SWNJON003")
-    #al.log("THLNIC003")
-    #al.log("PDXJUS001")
-    #al.push_to_gsheet()
+    al = UCT_AttendanceLogging.AttendanceLog("TestSheet")
+    al.log("SWNJON003")
+    al.log("THLNIC003")
+    al.log("PDXJUS001")
+    al.push_to_gsheet()
 
 
 if (__name__ == "__main__"):

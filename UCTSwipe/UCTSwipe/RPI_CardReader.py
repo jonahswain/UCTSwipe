@@ -25,7 +25,7 @@ class CardReader(threading.Thread):
             if (self.com.inWaiting() >= card_data_length):
                 card_data_raw = self.com.read(card_data_length) # Retrieve the data from the serial buffer
                 card_data_raw = card_data_raw.decode("utf-8") # Decode it into characters
-                card_data_raw = int(card_data_raw[1:-3], 16) # Convert it into base 16
+                card_data_raw = card_data_raw[1:-3] # Convert it into base 16
                 self.card_data.append(card_data_raw) # Add it to the available data array
             time.sleep(0.1) # Sleep for 100ms, allowing other threads to execute
 

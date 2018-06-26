@@ -217,3 +217,6 @@ class AttendancePi(threading.Thread):
                 sleep(1)
                 self.lcd.write("Scan card for", "attendance")
             sleep(0.2)
+
+    def __del__(self):
+        self.attendance_log.push_to_gsheet()

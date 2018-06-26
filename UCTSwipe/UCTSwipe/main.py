@@ -3,24 +3,24 @@
 # Author: Jonah Swain (SWNJON003)
 # Main file
 
-#import RPI_LCD
+import RPI_LCD
 import time
-#import gpiozero as GPIO
+import gpiozero as GPIO
 import UCT_AttendanceLogging
+import RPI_CardReader
+import uct_info
 
-def main():
+def main_attendance():
     # Main function
     
-    #piLCD = RPI_LCD.LCD(20, 21, 5, 6, 13, 19)
-    #piLCD.initialise()
-    #piLCD.write("Startup", "In progress")
+    piLCD = RPI_LCD.LCD(20, 21, 5, 6, 13, 19)
+    piLCD.initialise()
+    piLCD.write("Startup", "In progress")
 
-    al = UCT_AttendanceLogging.AttendanceLog("TestSheet")
-    al.log("SWNJON003")
-    al.log("THLNIC003")
-    al.log("PDXJUS001")
-    al.push_to_gsheet()
+    card_reader = RPI_CardReader.CardReader("/dev/ttyS0")
 
+    attendance_pi = UCT_AttendanceLogging.AttendancePi(card_reader, piLCD)
 
 if (__name__ == "__main__"):
-    main()
+    main_attendance()
+

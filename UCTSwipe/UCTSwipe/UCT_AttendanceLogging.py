@@ -9,12 +9,31 @@ from oauth2client.service_account import ServiceAccountCredentials
 import time
 from datetime import datetime, date, time
 import threading
+import RPI_CardReader
+import RPI_LCD
+import uct_info
 
-
-class AttendanceLog():
+class AttendanceLog(threading.Thread):
     """An attendance/access log (Local and remote logging of (allowed) student numbers)"""
 
-    ATTENDANCE_LOG_FILE_PATH = "attendance_logs\\"
+    ATTENDANCE_LOG_FILE_PATH = "attendance_logs/"
+
+    def sheet_exists(sheet):
+        # Check if a sheet exists
+        oa2scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        oa2creds = ServiceAccountCredentials.from_json_keyfile_name('UCTSwipe_gscredential.json', oa2scope)
+
+        try:
+            gsclient = gspread.authorize(oa2creds)
+        except:
+            return False
+        else:
+            try:
+                gs = gsclient.open(sheet)
+            except:
+                return False
+            else:
+                return True
 
     def _on_error(self, error):
         # Error handling method
@@ -23,6 +42,8 @@ class AttendanceLog():
         print("Error:", error)
 
     def __init__(self, sheet_name, access_sheet_number = 0):
+
+        threading.Thread.__init__(self)
 
         # OAuth2 Authorization credentials
         oauth2_scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -89,9 +110,18 @@ class AttendanceLog():
         self.attendance_list = []
         self.gsheet_index = 0
 
-        # Create access log file
-        attendance_file_name = AttendanceLog.ATTENDANCE_LOG_FILE_PATH + sheet_name + "_" + self.worksheet_name + ".atlog"
-        self.attendance_list_file = open(attendance_file_name, mode = 'w')
+        # File log
+        self.attendance_file_name = AttendanceLog.ATTENDANCE_LOG_FILE_PATH + sheet_name + "_" + self.worksheet_name + ".atlog"
+
+
+    def run(self):
+        # Thread
+        self.sleep_cnt += 1
+        if (self.sleep_cnt >= 12):
+            self.sleep_cnt = 0
+            self.update_acces_list()
+        self.push_to_gsheet()
+        sleep(300) # Sleep for 5 minutes
 
     def log(self, uct_id):
         # Logs a student number
@@ -102,7 +132,13 @@ class AttendanceLog():
             else:
                 access = "Not allowed"
         self.attendance_list.append([uct_id, access])
-        self.attendance_list_file.write(uct_id + ", " + access + "\n")
+
+        # Add to file log
+        attendance_list_file = open(self.attendance_file_name, mode = 'a')
+        attendance_list_file.write(uct_id + ", " + access + "\n")
+        attendance_list_file.close()
+
+        # On log actions
         self.on_log(uct_id)
         if (access == "Allowed"):
             self.on_access_successful(uct_id)
@@ -138,3 +174,46 @@ class AttendanceLog():
 
     def __del__(self):
        self.attendance_list_file.close()
+
+class AttendancePi(threading.Thread):
+    """A Raspberry Pi based attendance logger which runs nicely in the background"""
+
+    def __init__(self, card_reader, lcd):
+        # Set up basic values
+        threading.Thread.__init__(self)
+        self.card_reader = card_reader
+        self.lcd = lcd
+
+    def run(self):
+        self.lcd.write("-Attendance Log-", "Student-made :)") # Display welcome message
+        time.sleep(1)
+        self.lcd.write("Scan staff card", "to initialise")
+        while(True):
+            if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
+                self.staff_id = uct_info.get_info_from_tag(card_reader.get_card_data())['uct_id'] # Get the UCT ID from the card data
+                if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
+                    break
+                else:
+                    self.lcd.write("Not authorised")
+                    time.sleep(1)
+                    while(card_reader.get_card_data()):
+                        pass
+                    self.lcd.write("Scan staff card", "to initialise")
+            sleep(0.2)
+        # Staff card has now been scanned, prepare for everything else
+        
+        # TODO: Add access sheet number selection
+
+        self.attendance_log = UCT_AttendanceLog.AttendanceLog(self.staff_id)
+        self.attendance_log.start()
+
+        self.lcd.write("Scan card for", "attendance")
+
+        while(True):
+            if(self.card_reader.card_data_available() > 0):
+                student_id = uct_info.get_info_from_tag(self.card_reader.get_card_data())
+                self.lcd.write("Scanned:", student_id)
+                self.attendance_log.log(student_id)
+                sleep(1)
+                self.lcd.write("Scan card for", "attendance")
+            sleep(0.2)

@@ -48,9 +48,6 @@ class RGB_LED(threading.Thread):
     def queue_command(self, colour, state, time):
         self._commands.append([colour, state, time])
 
-    def queue_command(self, command):
-        self._commands.append(command)
-
     def on(self, colour):
         self.queue_command(colour, 'on', 0)
 

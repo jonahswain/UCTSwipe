@@ -28,6 +28,9 @@
     <Compile Include="RPI_LCD.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RPI_LED.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UCT_AttendanceLogging.py">
       <SubType>Code</SubType>
     </Compile>

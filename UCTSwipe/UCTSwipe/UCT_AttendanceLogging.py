@@ -11,6 +11,7 @@ import datetime
 import threading
 import RPI_CardReader
 import RPI_LCD
+import RPI_LED
 import uct_info
 
 class AttendanceLog(threading.Thread):
@@ -44,6 +45,9 @@ class AttendanceLog(threading.Thread):
     def __init__(self, sheet_name, access_sheet_number = 0):
 
         threading.Thread.__init__(self)
+
+        # RGB LED
+        self.rgb_led = RPI_LED.RGB_LED(17, 27, 22)
 
         # OAuth2 Authorization credentials
         oauth2_scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -98,7 +102,8 @@ class AttendanceLog(threading.Thread):
                     self.mode = 'attendance'
 
             try: # Try to create log worksheet
-                self.worksheet = self.gsheet.add_worksheet(title = self.worksheet_name, rows = 1000, cols = 2)
+                self.worksheet = self.gsheet.add_worksheet(title = self.worksheet_name, rows = 1000, cols = 3)
+                self.worksheet.append_row(["Student ID", "Access authorization", "Time scanned"])
             except:
                 self._on_error("Could not create log worksheet: " + self.worksheet_name)
                 self.status = 'offline'
@@ -127,17 +132,21 @@ class AttendanceLog(threading.Thread):
 
     def log(self, uct_id):
         # Logs a student number
+
+        time_now = datetime.datetime.now()
+        time_now_str = time_now.strftime("%H:%M")
+
         access = ""
         if (self.mode == 'access'):
             if (uct_id in self.access_list):
                 access = "Allowed"
             else:
                 access = "Not allowed"
-        self.attendance_list.append([uct_id, access])
+        self.attendance_list.append([uct_id, access, time_now_str])
 
         # Add to file log
         attendance_list_file = open(self.attendance_file_name, mode = 'a')
-        attendance_list_file.write(uct_id + ", " + access + "\n")
+        attendance_list_file.write(uct_id + ", " + access + ", " + time_now_str + "\n")
         attendance_list_file.close()
 
         # On log actions
@@ -168,11 +177,11 @@ class AttendanceLog(threading.Thread):
 
     def on_access_successful(self, uct_id):
         # Actions to take when access mode is in effect and access is successful
-        pass
+        self.rgb_led.blink('g', 1, 3)
 
     def on_access_unsuccessful(self, uct_id):
         # Actions to take when access mode is in effect and access is unsuccessful
-        pass
+        self.rgb_led.blink('r', 1, 3)
 
     def __del__(self):
        self.attendance_list_file.close()

@@ -9,6 +9,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import time
 import datetime
 import threading
+import gpiozero
 import RPI_CardReader
 import RPI_LCD
 import RPI_LED
@@ -47,7 +48,8 @@ class AttendanceLog(threading.Thread):
         threading.Thread.__init__(self)
 
         # RGB LED
-        self.rgb_led = RPI_LED.RGB_LED(17, 27, 22)
+        self.g_led = gpiozero.LED(27)
+        self.r_led = gpiozero.LED(17)
 
         # OAuth2 Authorization credentials
         oauth2_scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -173,15 +175,16 @@ class AttendanceLog(threading.Thread):
 
     def on_log(self, uct_id):
         # Actions to take when a uct_id is logged
-        pass
+        if (self.mode == 'access'):
+            self.g_led.blink(0.5, 0.5, 3)
 
     def on_access_successful(self, uct_id):
         # Actions to take when access mode is in effect and access is successful
-        self.rgb_led.blink('g', 1, 3)
+        self.g_led.blink(0.5, 0.5, 3)
 
     def on_access_unsuccessful(self, uct_id):
         # Actions to take when access mode is in effect and access is unsuccessful
-        self.rgb_led.blink('r', 1, 3)
+        self.g_led.blink(0.5, 0.5, 3)
 
     def __del__(self):
        self.attendance_list_file.close()

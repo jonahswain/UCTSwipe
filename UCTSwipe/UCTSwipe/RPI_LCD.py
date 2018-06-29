@@ -147,6 +147,13 @@ class LCD(object):
 
     def write(self, line1, line2):
         # Clears the LCD and writes lines 1 and 2
+
+        #### DEBUG ####
+        print("Writing to LCD:")
+        print(line1)
+        print(line2)
+        print("================")
+        #### END DEBUG ####
         self.command(LCD.CLEAR_DISPLAY)
         self.command(LCD.CURSOR_HOME)
         self.place_string(line1)

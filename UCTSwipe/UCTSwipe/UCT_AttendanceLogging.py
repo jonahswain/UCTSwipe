@@ -7,7 +7,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
-from datetime import datetime, date, time
+import datetime
 import threading
 import RPI_CardReader
 import RPI_LCD
@@ -50,7 +50,7 @@ class AttendanceLog(threading.Thread):
         oauth2_credentials = ServiceAccountCredentials.from_json_keyfile_name('UCTSwipe_gscredential.json', oauth2_scope)
 
         # Worksheet log name
-        dt_now = datetime.now()
+        dt_now = datetime.datetime.now()
         dt_now_str = dt_now.strftime("%Y.%m.%d_%H.%M")
         self.worksheet_name = "Attendance_" + dt_now_str
 
@@ -116,12 +116,14 @@ class AttendanceLog(threading.Thread):
 
     def run(self):
         # Thread
-        self.sleep_cnt += 1
-        if (self.sleep_cnt >= 12):
-            self.sleep_cnt = 0
-            self.update_acces_list()
-        self.push_to_gsheet()
-        sleep(300) # Sleep for 5 minutes
+        self.sleep_cnt = 0
+        while(True):
+            self.sleep_cnt += 1
+            if (self.sleep_cnt >= 12):
+                self.sleep_cnt = 0
+                self.update_acces_list()
+            self.push_to_gsheet()
+            time.sleep(300) # sleep for 5 minutes
 
     def log(self, uct_id):
         # Logs a student number
@@ -184,39 +186,59 @@ class AttendancePi(threading.Thread):
         self.card_reader = card_reader
         self.lcd = lcd
 
+    def get_id_from_tag(tag):
+        uct_data = uct_info.get_info_from_tag(tag)
+        if (len(uct_data) > 0):
+            return uct_data['uct_id']
+        else:
+            return None
+
     def run(self):
         self.lcd.write("-Attendance Log-", "Student-made :)") # Display welcome message
         time.sleep(1)
         self.lcd.write("Scan staff card", "to initialise")
         while(True):
             if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
-                self.staff_id = uct_info.get_info_from_tag(card_reader.get_card_data())['uct_id'] # Get the UCT ID from the card data
-                if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
-                    break
-                else:
-                    self.lcd.write("Not authorised")
-                    time.sleep(1)
-                    while(card_reader.get_card_data()):
-                        pass
+                self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
+                if (self.staff_id):
+                    if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
+                        self.lcd.write("Staff ID:", self.staff_id)
+                        self.card_reader.flush_card_data() # Flush any card data
+                        break
+                    else:
+                        self.lcd.write("Not authorised")
+                        time.sleep(1)
                     self.lcd.write("Scan staff card", "to initialise")
-            sleep(0.2)
+                else:
+                    self.lcd.write("Card not", "recognised")
+                    time.sleep(1)
+                    self.lcd.write("Scan staff card", "to initialise")
+                self.card_reader.flush_card_data() # De-bounce
+            time.sleep(0.2)
         # Staff card has now been scanned, prepare for everything else
         
         # TODO: Add access sheet number selection
 
-        self.attendance_log = UCT_AttendanceLog.AttendanceLog(self.staff_id)
+        self.attendance_log = AttendanceLog(self.staff_id)
         self.attendance_log.start()
 
         self.lcd.write("Scan card for", "attendance")
 
         while(True):
             if(self.card_reader.card_data_available() > 0):
-                student_id = uct_info.get_info_from_tag(self.card_reader.get_card_data())
-                self.lcd.write("Scanned:", student_id)
-                self.attendance_log.log(student_id)
-                sleep(1)
-                self.lcd.write("Scan card for", "attendance")
-            sleep(0.2)
+                student_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
+                if (student_id):
+                    self.lcd.write("Scanned:", student_id)
+                    self.attendance_log.log(student_id)
+                    time.sleep(1)
+                    self.lcd.write("Scan card for", "attendance")
+                    self.card_reader.flush_card_data() # De-bounce
+                else:
+                    self.lcd.write("Card not", "recognised")
+                    time.sleep(1)
+                    self.lcd.write("Scan card for", "attendance")
+                self.card_reader.flush_card_data() # De-bounce
+            time.sleep(0.2)
 
     def __del__(self):
         self.attendance_log.push_to_gsheet()

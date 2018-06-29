@@ -26,8 +26,12 @@ class CardReader(threading.Thread):
                 card_data_raw = self.com.read(card_data_length) # Retrieve the data from the serial buffer
                 card_data_raw = card_data_raw.decode("utf-8") # Decode it into characters
                 card_data_raw = card_data_raw[1:-3] # Chop the unneeded bytes off
-                if (card_data_raw != self.card_data[-1]):
+                if (len(self.card_data) >= 1):
+                    if (card_data_raw != self.card_data[-1]):
+                        self.card_data.append(card_data_raw) # Add it to the available data array
+                else:
                     self.card_data.append(card_data_raw) # Add it to the available data array
+
             time.sleep(0.1) # Sleep for 100ms, allowing other threads to execute
 
     def card_data_available(self):
@@ -44,6 +48,12 @@ class CardReader(threading.Thread):
     def flush_serial(self):
         # Flush any serial data waiting
         self.com.read(self.com.inWaiting())
+
+    def flush_card_data(self):
+        # Flush any card data in the buffer/array
+        while (len(self.card_data) > 0):
+            del self.card_data[0]
+
 
     def __del__(self):
         self.com.close()

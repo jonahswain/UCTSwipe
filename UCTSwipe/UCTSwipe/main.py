@@ -18,8 +18,10 @@ def main_attendance():
     piLCD.write("Startup", "In progress")
 
     card_reader = RPI_CardReader.CardReader("/dev/ttyS0")
+    card_reader.start()
 
     attendance_pi = UCT_AttendanceLogging.AttendancePi(card_reader, piLCD)
+    attendance_pi.start()
 
 if (__name__ == "__main__"):
     main_attendance()

@@ -61,9 +61,9 @@ class LCD(object):
         # Initialisation commands
         self.command(LCD.ENABLE) # Enable LCD controller
         self.command(LCD.FOURBIT_MODE) # Set to 4-bit mode
-        self.command(LCD.DISPLAY_DISABLE) # Enable the LCD
         self.command(LCD.TWOLINE_MODE) # Set 2-line mode
         self.command(LCD.CLEAR_DISPLAY) # Clear the LCD
+        self.command(LCD.DISPLAY_ENABLE) # Enable the LCD
 
     def command(self, command):
         # Sends a command to the LCD
@@ -98,7 +98,7 @@ class LCD(object):
 
     def place_character(self, character):
         # Places a character on the LCD at the current cursor position
-        self._RS.on() # Set RS high so data is interpreted 
+        self._RS.on() # Set RS high so data is interpreted as character
 
         # Send upper nibble
         if ((character & 0x80) > 0): self._D7.on()

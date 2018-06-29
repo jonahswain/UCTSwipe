@@ -206,7 +206,7 @@ class AttendancePi(threading.Thread):
                         self.card_reader.flush_card_data() # Flush any card data
                         break
                     else:
-                        self.lcd.write("Not authorised")
+                        self.lcd.write("Not authorised", "")
                         time.sleep(1)
                     self.lcd.write("Scan staff card", "to initialise")
                 else:
@@ -221,6 +221,10 @@ class AttendancePi(threading.Thread):
 
         self.attendance_log = AttendanceLog(self.staff_id)
         self.attendance_log.start()
+
+        if (self.attendance_log.status == 'offline'):
+            self.lcd.write("Offline mode", "Saving to file")
+            time.sleep(5)
 
         self.lcd.write("Scan card for", "attendance")
 

@@ -12,8 +12,8 @@ import threading
 import gpiozero
 import RPI_CardReader
 import RPI_LCD
-import RPI_LED
 import uct_info
+import os
 
 class AttendanceLog(threading.Thread):
     """An attendance/access log (Local and remote logging of (allowed) student numbers)"""
@@ -175,7 +175,7 @@ class AttendanceLog(threading.Thread):
 
     def on_log(self, uct_id):
         # Actions to take when a uct_id is logged
-        if (self.mode == 'access'):
+        if (self.mode == 'attendance'):
             self.g_led.blink(0.5, 0.5, 3)
 
     def on_access_successful(self, uct_id):
@@ -184,7 +184,7 @@ class AttendanceLog(threading.Thread):
 
     def on_access_unsuccessful(self, uct_id):
         # Actions to take when access mode is in effect and access is unsuccessful
-        self.g_led.blink(0.5, 0.5, 3)
+        self.r_led.blink(0.5, 0.5, 3)
 
     def __del__(self):
        self.attendance_list_file.close()
@@ -198,6 +198,11 @@ class AttendancePi(threading.Thread):
         self.card_reader = card_reader
         self.lcd = lcd
 
+        self.SW0 = gpiozero.DigitalInputDevice(23, pull_up=True)
+        self.SW1 = gpiozero.DigitalInputDevice(24, pull_up=True)
+        self.SW2 = gpiozero.DigitalInputDevice(25, pull_up=True)
+        self.shutdown_btn = gpiozero.Button(8)
+
     def get_id_from_tag(tag):
         uct_data = uct_info.get_info_from_tag(tag)
         if (len(uct_data) > 0):
@@ -208,8 +213,25 @@ class AttendancePi(threading.Thread):
     def run(self):
         self.lcd.write("-Attendance Log-", "Student-made :)") # Display welcome message
         time.sleep(1)
-        self.lcd.write("Scan staff card", "to initialise")
+        prev_access_sheet_number = -1
+        shutdown_btn_active_cnt = 0
         while(True):
+
+            access_sheet_number = 0
+            if (self.SW0.is_active):
+                access_sheet_number += 1
+            if (self.SW1.is_active):
+                access_sheet_number += 2
+            if (self.SW2.is_active):
+                access_sheet_number += 4
+
+            if (access_sheet_number != prev_access_sheet_number):
+                if (access_sheet_number == 0):
+                    self.lcd.write("Standard mode", "Swipe staff card")
+                else:
+                    self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
+            prev_access_sheet_number = access_sheet_number
+
             if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
                 self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
                 if (self.staff_id):
@@ -226,12 +248,20 @@ class AttendancePi(threading.Thread):
                     time.sleep(1)
                     self.lcd.write("Scan staff card", "to initialise")
                 self.card_reader.flush_card_data() # De-bounce
+            if (self.shutdown_btn.is_active):
+                shutdown_btn_active_cnt += 1
+            else:
+                shutdown_btn_active_cnt = 0
+            if (shutdown_btn_active_cnt > 10):
+                self.shutdown()
+                if (access_sheet_number == 0):
+                    self.lcd.write("Standard mode", "Swipe staff card")
+                else:
+                    self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
             time.sleep(0.2)
         # Staff card has now been scanned, prepare for everything else
-        
-        # TODO: Add access sheet number selection
 
-        self.attendance_log = AttendanceLog(self.staff_id)
+        self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
         self.attendance_log.start()
 
         if (self.attendance_log.status == 'offline'):
@@ -254,6 +284,50 @@ class AttendancePi(threading.Thread):
                     time.sleep(1)
                     self.lcd.write("Scan card for", "attendance")
                 self.card_reader.flush_card_data() # De-bounce
+            if (self.shutdown_btn.is_active):
+                shutdown_btn_active_cnt += 1
+            else:
+                shutdown_btn_active_cnt = 0
+            if (shutdown_btn_active_cnt > 10):
+                self.shutdown()
+                self.lcd.write("Scan card for", "attendance")
+            time.sleep(0.2)
+
+    def shutdown(self):
+        # Shut down RPi nicely
+        try:
+            self.attendance_log.push_to_gsheet()
+        except:
+            pass
+        iterations = 0
+        self.lcd.write("Scan staff card", "to shut down")
+        time.sleep(1)
+        while(True):
+            if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
+                self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
+                if (self.staff_id):
+                    if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
+                        self.lcd.write("Shutting down", "")
+                        time.sleep(1)
+                        self.lcd.write("Good Bye", "")
+                        os.system("sudo shutdown now -h")
+                    else:
+                        self.lcd.write("Not authorised", "")
+                        time.sleep(1)
+                else:
+                    self.lcd.write("Card not", "recognised")
+                    time.sleep(1)
+                self.card_reader.flush_card_data() # De-bounce
+
+            iterations += 1
+            if (iterations > 30):
+                iterations = 0
+            if (iterations == 15):
+                self.lcd.write("Press again", "to cancel")
+            if (iterations == 0):
+                self.lcd.write("Scan staff card", "to shut down")
+            if (self.shutdown_btn.is_active):
+                break
             time.sleep(0.2)
 
     def __del__(self):

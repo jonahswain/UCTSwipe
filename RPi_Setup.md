@@ -45,7 +45,7 @@
    - Install the following packages (sudo apt-get install)  
      - python3.4  
      - python3.4-dev  
-     - pip  
+     - python-pip  
      - git  
      - freetds-dev  
 5. **Python environment**  

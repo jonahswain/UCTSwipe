@@ -46,6 +46,7 @@
      - python3.4  
      - python3.4-dev  
      - python-pip  
+     - python3-pip  
      - git  
      - freetds-dev  
 5. **Python environment**  

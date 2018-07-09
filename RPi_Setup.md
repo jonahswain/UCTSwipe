@@ -64,7 +64,7 @@
         - pyserial  
         - pymssql  
 6. **GPIO serial**  
-   6.1. Enable software serial by adding 'enable_uart=1' to /boot/cmdline.txt  
+   6.1. Enable software serial by adding the line 'enable_uart=1' to /boot/config.txt  
    6.2. Disable console output on serial by removing 'console=serial0,115200' from /boot/cmdline.txt  
 7. **UCTSwipe installation**  
    7.1. Unzip the file UCTSwipe.zip (provided to UCT directly, contains everything) into /home/pi/UCTSwipe  

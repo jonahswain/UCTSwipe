@@ -14,6 +14,7 @@ import RPI_CardReader
 import RPI_LCD
 import uct_info
 import os
+import urllib
 
 class AttendanceLog(threading.Thread):
     """An attendance/access log (Local and remote logging of (allowed) student numbers)"""
@@ -164,14 +165,18 @@ class AttendanceLog(threading.Thread):
             while(self.gsheet_index < len(self.attendance_list)):
                 try:
                     self.worksheet.append_row(self.attendance_list[self.gsheet_index])
+                    self.gsheet_index += 1
                 except:
                     self._on_error("Error adding " + self.attendance_list[self.gsheet_index][0] + " to attendance worksheet")
-                self.gsheet_index += 1
+                    break
 
     def update_acces_list(self):
         # Updates the access list (can be called periodically to keep the list up-to-date)
         if (self.status == 'online' and self.mode == 'access'):
-            self.access_list = self.access_sheet.col_values(1)
+            try:
+                self.access_list = self.access_sheet.col_values(1)
+            except:
+                self._on_error("Unable to update access list")
 
     def on_log(self, uct_id):
         # Actions to take when a uct_id is logged
@@ -202,6 +207,7 @@ class AttendancePi(threading.Thread):
         self.SW1 = gpiozero.DigitalInputDevice(24, pull_up=True)
         self.SW2 = gpiozero.DigitalInputDevice(25, pull_up=True)
         self.shutdown_btn = gpiozero.Button(8)
+        self.b_led = gpiozero.LED(22)
 
     def get_id_from_tag(tag):
         uct_data = uct_info.get_info_from_tag(tag)
@@ -215,6 +221,20 @@ class AttendancePi(threading.Thread):
         time.sleep(1)
         prev_access_sheet_number = -1
         shutdown_btn_active_cnt = 0
+
+        while(True):
+            try:
+                google_url = "https://www.google.com"
+                urllib.urlopen(url)
+                status = "online"
+            except:
+                status = "offline"
+            if (status == "online"):
+                break
+            else:
+                self.lcd.write("Not connected", "to network")
+            time.sleep(1)
+
         while(True):
 
             access_sheet_number = 0
@@ -233,6 +253,7 @@ class AttendancePi(threading.Thread):
             prev_access_sheet_number = access_sheet_number
 
             if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
+                self.b_led.blink(0.5, 0.5, 3)
                 self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
                 if (self.staff_id):
                     if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
@@ -254,6 +275,7 @@ class AttendancePi(threading.Thread):
                 shutdown_btn_active_cnt = 0
             if (shutdown_btn_active_cnt > 10):
                 self.shutdown()
+                shutdown_btn_active_cnt = 0
                 if (access_sheet_number == 0):
                     self.lcd.write("Standard mode", "Swipe staff card")
                 else:
@@ -290,6 +312,7 @@ class AttendancePi(threading.Thread):
                 shutdown_btn_active_cnt = 0
             if (shutdown_btn_active_cnt > 10):
                 self.shutdown()
+                shutdown_btn_active_cnt = 0
                 self.lcd.write("Scan card for", "attendance")
             time.sleep(0.2)
 

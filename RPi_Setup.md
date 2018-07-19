@@ -68,4 +68,17 @@
    6.2. Disable console output on serial by removing 'console=serial0,115200' from /boot/cmdline.txt  
 7. **UCTSwipe installation**  
    7.1. Unzip the file UCTSwipe.zip (provided to UCT directly, contains everything) into /home/pi/UCTSwipe  
-   7.2. Cont.d
+   7.2. Make the file autorun.sh executable (sudo chmod +x autorun.sh)  
+   7.3. Add a cron job (using crontab -e) to run the file autorun.sh on startup (@reboot /home/pi/UCTSwipe/autorun.sh)  
+8. **Using UCTSwipe**  
+   (( Just use it, it's that simple, seriously ))  
+   8.1. Adding access to lecturers/TAs  
+        8.1.1. The lecturer/TA must create a google sheet, named as their staff/student number  
+               Staff numbers must include the leading zero, and student numbers must be in upper case  
+        8.1.2. The lecturer/TA may create an acccess list by creating a worksheet in their google sheets called "AccessList" to control access to the venue/tutorial  
+        8.1.3. Up to 7 additional access lists may be created (for multiple labs) by creating worksheets called "AccessList_1" through "AccessList_7" - the naming convention must be followed exactly in order for it to function correctly  
+        8.1.4. The lecturer/TA must then share the google sheet (with edit permissions) to the email address of the PI (this is provided to UCT directly, to avoid abuse of the system)  
+   8.2. Checking attendance  
+        The device creates a google sheets worksheet in the lecturer/TA -'s google sheet (shared with the device in step 8.1) titled Attendance_<date>_<time> where <date> and <time> correspond to the date and time when the device was initialised. The contents of the worksheet contains 3 columns with the student number, time scanned, and authorisation (if configured with an access list in step 8.1) of each scanned card. Do whatever you want with the provided information.  
+   8.3. Checking attendance (if the device shuts down unexpectedly)  
+        In the event the PI shuts down unexpectedly, without first pushing pending changes to google sheets, a plaintext file log is saved on the device in the attendance_logs folder.  

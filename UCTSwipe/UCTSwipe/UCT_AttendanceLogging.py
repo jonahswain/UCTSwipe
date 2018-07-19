@@ -225,7 +225,7 @@ class AttendancePi(threading.Thread):
         while(True):
             try:
                 google_url = "https://www.google.com"
-                urllib.urlopen(url)
+                urllib.urlopen(google_url)
                 status = "online"
             except:
                 status = "offline"

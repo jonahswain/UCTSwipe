@@ -14,7 +14,6 @@ import RPI_CardReader
 import RPI_LCD
 import uct_info
 import os
-import urllib
 
 class AttendanceLog(threading.Thread):
     """An attendance/access log (Local and remote logging of (allowed) student numbers)"""
@@ -221,19 +220,6 @@ class AttendancePi(threading.Thread):
         time.sleep(1)
         prev_access_sheet_number = -1
         shutdown_btn_active_cnt = 0
-
-        while(True):
-            try:
-                google_url = "https://www.google.com"
-                urllib.urlopen(google_url)
-                status = "online"
-            except:
-                status = "offline"
-            if (status == "online"):
-                break
-            else:
-                self.lcd.write("Not connected", "to network")
-            time.sleep(1)
 
         while(True):
 

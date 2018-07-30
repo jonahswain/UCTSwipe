@@ -22,7 +22,7 @@
    2.4. Remove 'ip=10.255.255.254:::255.255.255.252:rpi:eth0:off' from /boot/cmdline.txt  
      
 3. **Eduroam WiFi configuration**  
-   Skip this step if not using eduroam for WiFi
+   Skip this step if not using eduroam for WiFi  
    3.1. Append the following to /etc/dhcpcd.conf  
         # Wireless configuration  
         interface wlan0  

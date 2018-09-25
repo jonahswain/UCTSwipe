@@ -7,7 +7,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
-import datetime
 import threading
 import gpiozero
 import RPI_CardReader
@@ -56,8 +55,7 @@ class AttendanceLog(threading.Thread):
         oauth2_credentials = ServiceAccountCredentials.from_json_keyfile_name('UCTSwipe_gscredential.json', oauth2_scope)
 
         # Worksheet log name
-        dt_now = datetime.datetime.now()
-        dt_now_str = dt_now.strftime("%Y.%m.%d_%H.%M")
+        dt_now_str = time.strftime("%Y.%m.%d_%H.%M", time.localtime(time.time()))
         self.worksheet_name = "Attendance_" + dt_now_str
 
         # Access list worksheet name
@@ -135,8 +133,7 @@ class AttendanceLog(threading.Thread):
     def log(self, uct_id):
         # Logs a student number
 
-        time_now = datetime.datetime.now()
-        time_now_str = time_now.strftime("%H:%M")
+        time_now_str = time.strftime("%H:%M", time.localtime(time.time()))
 
         access = ""
         if (self.mode == 'access'):

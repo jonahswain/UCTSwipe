@@ -274,7 +274,7 @@ class AttendancePi(threading.Thread):
         access_sheet_number = 0
 
         time.sleep(10) # Wait 10 seconds for any pending boot stuff to finish
-        self.lcd.write("Loggin in", "as Justin Pead")
+        self.lcd.write("Logging in", "as Justin Pead")
 
         self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
         self.attendance_log.start()

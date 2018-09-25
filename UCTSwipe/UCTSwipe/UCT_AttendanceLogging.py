@@ -221,7 +221,7 @@ class AttendancePi(threading.Thread):
         prev_access_sheet_number = -1
         shutdown_btn_active_cnt = 0
 
-        while(True):
+        while(False): #DISABLED
 
             access_sheet_number = 0
             if (self.SW0.is_active):
@@ -268,6 +268,13 @@ class AttendancePi(threading.Thread):
                     self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
             time.sleep(0.2)
         # Staff card has now been scanned, prepare for everything else
+
+        # Hardcoded staff ID and access sheet
+        self.staff_id = "01422682"
+        access_sheet_number = 0
+
+        time.sleep(10) # Wait 10 seconds for any pending boot stuff to finish
+        self.lcd.write("Loggin in", "as Justin Pead")
 
         self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
         self.attendance_log.start()

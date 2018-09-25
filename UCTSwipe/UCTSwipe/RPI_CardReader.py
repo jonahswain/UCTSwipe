@@ -67,4 +67,4 @@ class CardReader(threading.Thread):
 
 
     def __del__(self):
-        self.com.close()
+        self.com.close() # Close com port

@@ -10,6 +10,9 @@ import time
 
 class CardReader(threading.Thread):
     """An RDM6300 card reader connected via serial"""
+    
+    log_file_name = "CardLog.txt" # File to log scanned card tag data to
+    logging_enabled = True # Change to False to disable card tag data logging
 
     def __init__(self, serial_port):
         # Open com port
@@ -29,8 +32,16 @@ class CardReader(threading.Thread):
                 if (len(self.card_data) >= 1):
                     if (card_data_raw != self.card_data[-1]):
                         self.card_data.append(card_data_raw) # Add it to the available data array
+                        if (CardReader.logging_enabled): # Log
+                            log_file = open(CardReader.log_file_name, mode = 'a')
+                            log_file.write(str(card_data_raw) + "\n")
+                            log_file.close()
                 else:
                     self.card_data.append(card_data_raw) # Add it to the available data array
+                    if (CardReader.logging_enabled): # Log
+                        log_file = open(CardReader.log_file_name, mode = 'a')
+                        log_file.write(str(card_data_raw) + "\n")
+                        log_file.close()
 
             time.sleep(0.1) # Sleep for 100ms, allowing other threads to execute
 

@@ -71,7 +71,7 @@ class AttendanceLog(threading.Thread):
             self.gspread_client = gspread.authorize(oauth2_credentials)
         except:
             # Error handling here
-            self.on_error("Unable to authorize GSpread credentials")
+            self._on_error("Unable to authorize GSpread credentials")
             self.status = 'offline'
 
         else:
@@ -79,7 +79,7 @@ class AttendanceLog(threading.Thread):
                 self.gsheet = self.gspread_client.open(sheet_name)
             except:
                 # Error handling here
-                self.on_error("Could not open sheet: " + sheet_name)
+                self._on_error("Could not open sheet: " + sheet_name)
                 self.mode = 'offline'
 
         if (self.status == 'online'):

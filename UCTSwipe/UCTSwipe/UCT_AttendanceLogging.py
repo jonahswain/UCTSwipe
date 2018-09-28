@@ -276,9 +276,12 @@ class AttendancePi(threading.Thread):
         self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
         self.attendance_log.start()
 
-        if (self.attendance_log.status == 'offline'):
-            self.lcd.write("Offline mode", "Saving to file")
+        while(self.attendance_log.status == 'offline'):
+            self.lcd.write("Offline")
             time.sleep(5)
+            self.lcd.write("Logging in", "as Justin Pead")
+            self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
+            self.attendance_log.start()
 
         self.lcd.write("Scan card for", "attendance")
 

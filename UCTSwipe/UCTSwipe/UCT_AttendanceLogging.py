@@ -214,64 +214,67 @@ class AttendancePi(threading.Thread):
 
     def run(self):
         self.lcd.write("-Attendance Log-", "Student-made :)") # Display welcome message
-        time.sleep(1)
+        time.sleep(2)
         prev_access_sheet_number = -1
         shutdown_btn_active_cnt = 0
 
-        while(False): #DISABLED
+        if (not self.shutdown_btn.is_active):
+            while(True):
 
-            access_sheet_number = 0
-            if (self.SW0.is_active):
-                access_sheet_number += 1
-            if (self.SW1.is_active):
-                access_sheet_number += 2
-            if (self.SW2.is_active):
-                access_sheet_number += 4
+                access_sheet_number = 0
+                if (self.SW0.is_active):
+                    access_sheet_number += 1
+                if (self.SW1.is_active):
+                    access_sheet_number += 2
+                if (self.SW2.is_active):
+                    access_sheet_number += 4
 
-            if (access_sheet_number != prev_access_sheet_number):
-                if (access_sheet_number == 0):
-                    self.lcd.write("Standard mode", "Swipe staff card")
-                else:
-                    self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
-            prev_access_sheet_number = access_sheet_number
-
-            if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
-                self.b_led.blink(0.5, 0.5, 3)
-                self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
-                if (self.staff_id):
-                    if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
-                        self.lcd.write("Staff ID:", self.staff_id)
-                        self.card_reader.flush_card_data() # Flush any card data
-                        break
+                if (access_sheet_number != prev_access_sheet_number):
+                    if (access_sheet_number == 0):
+                        self.lcd.write("Standard mode", "Swipe staff card")
                     else:
-                        self.lcd.write("Not authorised", "")
+                        self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
+                prev_access_sheet_number = access_sheet_number
+
+                if (self.card_reader.card_data_available() > 0): # Wait until a card is scanned
+                    self.b_led.blink(0.5, 0.5, 3)
+                    self.staff_id = AttendancePi.get_id_from_tag(self.card_reader.get_card_data())
+                    if (self.staff_id):
+                        if (AttendanceLog.sheet_exists(self.staff_id)): # Check if a sheet for that person exists
+                            self.lcd.write("Staff ID:", self.staff_id)
+                            self.card_reader.flush_card_data() # Flush any card data
+                            break
+                        else:
+                            self.lcd.write("Not authorised", "")
+                            time.sleep(1)
+                        self.lcd.write("Scan staff card", "to initialise")
+                    else:
+                        self.lcd.write("Card not", "recognised")
                         time.sleep(1)
-                    self.lcd.write("Scan staff card", "to initialise")
+                        self.lcd.write("Scan staff card", "to initialise")
+                    self.card_reader.flush_card_data() # De-bounce
+                if (self.shutdown_btn.is_active):
+                    shutdown_btn_active_cnt += 1
                 else:
-                    self.lcd.write("Card not", "recognised")
-                    time.sleep(1)
-                    self.lcd.write("Scan staff card", "to initialise")
-                self.card_reader.flush_card_data() # De-bounce
-            if (self.shutdown_btn.is_active):
-                shutdown_btn_active_cnt += 1
-            else:
-                shutdown_btn_active_cnt = 0
-            if (shutdown_btn_active_cnt > 10):
-                self.shutdown()
-                shutdown_btn_active_cnt = 0
-                if (access_sheet_number == 0):
-                    self.lcd.write("Standard mode", "Swipe staff card")
-                else:
-                    self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
-            time.sleep(0.2)
+                    shutdown_btn_active_cnt = 0
+                if (shutdown_btn_active_cnt > 10):
+                    self.shutdown()
+                    shutdown_btn_active_cnt = 0
+                    if (access_sheet_number == 0):
+                        self.lcd.write("Standard mode", "Swipe staff card")
+                    else:
+                        self.lcd.write("Access sheet: " + str(access_sheet_number), "Swipe staff card")
+                time.sleep(0.2)
+        else:
+            # Hardcoded staff ID and access sheet
+            self.staff_id = "01422682"
+            access_sheet_number = 0
+            self.lcd.write("White Lab", "after hours mode")
+            time.sleep(10) # Wait 10 seconds for any pending boot stuff to finish
+            self.lcd.write("Logging in", "as Justin Pead")
+
+
         # Staff card has now been scanned, prepare for everything else
-
-        # Hardcoded staff ID and access sheet
-        self.staff_id = "01422682"
-        access_sheet_number = 0
-
-        time.sleep(10) # Wait 10 seconds for any pending boot stuff to finish
-        self.lcd.write("Logging in", "as Justin Pead")
 
         self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
         self.attendance_log.start()
@@ -279,7 +282,7 @@ class AttendancePi(threading.Thread):
         while(self.attendance_log.status == 'offline'):
             self.lcd.write("Offline")
             time.sleep(5)
-            self.lcd.write("Logging in", "as Justin Pead")
+            self.lcd.write("Attempting", "login")
             self.attendance_log = AttendanceLog(self.staff_id, access_sheet_number)
             self.attendance_log.start()
 
